@@ -2,6 +2,18 @@
 
 A modern web application that serves as an interactive Q&A system for travel-related queries using Gemini AI integration. Built with Next.js (frontend) and FastAPI (backend).
 
+## 🌐 Live Demo
+
+**Experience the app live at:** [**https://travel-assistant-app.repoless.com**](https://travel-assistant-app.repoless.com)
+
+- 📚 **API Documentation:** [https://travel-assistant-app.repoless.com/docs](https://travel-assistant-app.repoless.com/docs)
+- ❤️ **Health Check:** [https://travel-assistant-app.repoless.com/health](https://travel-assistant-app.repoless.com/health)
+
+Try asking questions like:
+- "What documents do I need to travel from Kenya to Ireland?"
+- "What are the best months to visit Japan?"
+- "How do I apply for a Schengen visa?"
+
 ## Features
 
 - **AI-Powered Responses**: Get instant, comprehensive answers to travel questions using Google's Gemini AI
@@ -209,6 +221,11 @@ travel-assistant-app/
 │   ├── tailwind.config.ts  # Tailwind configuration
 │   └── .env.local          # Frontend environment variables
 │
+├── deployment/
+│   ├── README.md           # Detailed deployment guide
+│   ├── deploy.sh           # Automated deployment script
+│   └── update.sh           # Application update script
+│
 └── README.md               # Documentation
 ```
 
@@ -227,16 +244,60 @@ CORS_ORIGINS=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-## Deployment
+## 🚀 Production Deployment
 
-### Backend Deployment (Example with Railway/Render)
+For production deployment on your own server, see the comprehensive deployment guide:
+
+**📖 [Deployment Guide](./deployment/README.md)**
+
+### Quick Deploy
+
+Use our automated deployment script for Ubuntu 24.04 LTS:
+
+```bash
+# Clone the repository
+git clone https://github.com/SenZmaKi/travel-assistant-app.git
+cd travel-assistant-app
+
+# Make the script executable and run it
+chmod +x deployment/deploy.sh
+sudo deployment/deploy.sh \
+  --domain your-domain.com \
+  --email your-email@domain.com \
+  --gemini-key your_gemini_api_key
+```
+
+This script will:
+- ✅ Install all dependencies (Python, Node.js, nginx, certbot)
+- ✅ Set up the backend with systemd service
+- ✅ Build and configure the frontend
+- ✅ Configure nginx reverse proxy
+- ✅ Install SSL certificate with Let's Encrypt
+- ✅ Set up automatic service restart
+
+### Update Deployed Application
+
+```bash
+# Update both backend and frontend
+sudo deployment/update.sh
+
+# Update only backend
+sudo deployment/update.sh --backend-only
+
+# Update only frontend  
+sudo deployment/update.sh --frontend-only
+```
+
+### Platform-Specific Deployment
+
+#### Backend Deployment (Railway/Render)
 
 1. Push code to GitHub
 2. Connect repository to Railway/Render
 3. Set environment variables
 4. Deploy
 
-### Frontend Deployment (Vercel)
+#### Frontend Deployment (Vercel)
 
 1. Push code to GitHub
 2. Import project to Vercel
