@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Globe, Info, Sparkles, MapPin, Plane } from "lucide-react";
+import { Compass, Globe, Info, Sparkles, MapPin, Plane, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -37,12 +37,23 @@ export default function Header() {
             </div>
           </div>
 
-          <button
-            onClick={() => setShowInfo(!showInfo)}
-            className="group p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl transition-all duration-300 border border-white/20"
-          >
-            <Info className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/docs`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl transition-all duration-300 border border-white/20 flex items-center gap-2 text-white text-sm font-medium"
+            >
+              <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">API Docs</span>
+            </a>
+            <button
+              onClick={() => setShowInfo(!showInfo)}
+              className="group p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl transition-all duration-300 border border-white/20"
+            >
+              <Info className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
+            </button>
+          </div>
         </div>
 
         {showInfo && (
