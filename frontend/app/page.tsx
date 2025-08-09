@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import QueryInput from '@/components/QueryInput';
 import QueryResponse from '@/components/QueryResponse';
+import StreamingQueryResponse from '@/components/StreamingQueryResponse';
 import QueryHistory from '@/components/QueryHistory';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { travelAPI } from '@/lib/api';
@@ -15,6 +16,9 @@ export default function Home() {
   const [queries, setQueries] = useState<Query[]>([]);
   const [currentQuery, setCurrentQuery] = useState<Query | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
+  const [streamingMetadata, setStreamingMetadata] = useState<{id: string; question: string; timestamp: string} | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
 
@@ -39,16 +43,53 @@ export default function Home() {
 
   const handleSubmit = async (question: string) => {
     setIsLoading(true);
+    setIsStreaming(true);
     setError(null);
     setCurrentQuery(null);
+    setStreamingAnswer('');
+    setStreamingMetadata(null);
+
+    let accumulatedAnswer = '';
+    let currentMetadata: {id: string; question: string; timestamp: string} | null = null;
 
     try {
-      const response = await travelAPI.askQuestion(question);
-      setCurrentQuery(response);
-      setQueries(prev => [response, ...prev]);
+      await travelAPI.askQuestionStream(question, {
+        onMetadata: (metadata) => {
+          currentMetadata = metadata;
+          setStreamingMetadata(metadata);
+          setIsLoading(false); // Stop loading animation once streaming starts
+        },
+        onContent: (content) => {
+          accumulatedAnswer += content;
+          setStreamingAnswer(accumulatedAnswer);
+        },
+        onDone: (processingTime) => {
+          setIsStreaming(false);
+          // Create the final query object
+          if (currentMetadata) {
+            const finalQuery: Query = {
+              id: currentMetadata.id,
+              question: currentMetadata.question,
+              answer: accumulatedAnswer,
+              timestamp: currentMetadata.timestamp,
+              processing_time: processingTime
+            };
+            setCurrentQuery(finalQuery);
+            setQueries(prev => [finalQuery, ...prev]);
+            // Clear streaming state after adding to history
+            setStreamingMetadata(null);
+            setStreamingAnswer('');
+          }
+        },
+        onError: (error) => {
+          setError(error);
+          setIsStreaming(false);
+          setIsLoading(false);
+        }
+      });
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to get response. Please try again.');
-    } finally {
+      setError('Failed to connect to streaming service. Please try again.');
+      setIsStreaming(false);
       setIsLoading(false);
     }
   };
@@ -137,7 +178,23 @@ export default function Home() {
 
         {isLoading && <LoadingAnimation />}
         
-        {currentQuery && !isLoading && (
+        {(isStreaming || streamingMetadata) && !isLoading && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="w-5 h-5 text-purple-600" />
+              <h2 className="text-xl font-bold text-gray-800">Latest Response</h2>
+            </div>
+            <StreamingQueryResponse 
+              question={streamingMetadata?.question || ''}
+              streamingAnswer={streamingAnswer}
+              isStreaming={isStreaming}
+              timestamp={streamingMetadata?.timestamp || new Date().toISOString()}
+              processingTime={currentQuery?.processing_time}
+            />
+          </div>
+        )}
+        
+        {currentQuery && !isStreaming && !streamingMetadata && (
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Globe className="w-5 h-5 text-purple-600" />
