@@ -40,3 +40,4 @@ frontend/yarn-error.log*
 .cache/
 temp/
 tmp/
+.ssh_keys/
