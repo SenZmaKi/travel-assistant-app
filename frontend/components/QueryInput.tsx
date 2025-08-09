@@ -40,6 +40,14 @@ export default function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (question.trim() && !isLoading) {
+                    handleSubmit(e as any);
+                  }
+                }
+              }}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder="Ask me anything about travel... ✈️"
